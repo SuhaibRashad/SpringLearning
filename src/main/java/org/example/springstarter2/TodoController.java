@@ -1,6 +1,8 @@
 package org.example.springstarter2;
 
 import jakarta.websocket.server.PathParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,12 @@ public class TodoController {
 
     private static List<Todo> todoList;
 
-    public TodoController(){
+    @Autowired
+    @Qualifier("fakeTodoService")
+    TodoService service;
+
+    public TodoController(TodoService service){
+        this.service = service;
         todoList = new ArrayList<>();
         todoList.add(new Todo(1, false, "Todo1", 1));
         todoList.add(new Todo(2, true, "Todo2", 2));
@@ -26,18 +33,21 @@ public class TodoController {
         return ResponseEntity.status(201).body(newTodo);
     }
 
-    @GetMapping
-    public ResponseEntity getTodos(@RequestParam(required = false , defaultValue = "false") boolean isCompleted){
+    @GetMapping("{todoID}")
+    public String getTodos( @PathVariable long todoID, @RequestParam(required = false , defaultValue = "false") boolean isCompleted){
         System.out.println("Incoming query params "+ isCompleted);
-        return ResponseEntity.ok().build();
+        System.out.println("Incoming request params "+ todoID);
+        service.doSomething();
+        return "hi";
+
     }
 
-    @GetMapping("/{todoID}")
-    public ResponseEntity<?> getTodoByID(@PathVariable long todoID){
-        return todoList.stream()
-                .filter(todo -> todo.getId() == todoID)
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.OK).build());
-    }
+//    @GetMapping("/{todoID}")
+//    public ResponseEntity<?> getTodoByID(@PathVariable long todoID){
+//        return todoList.stream()
+//                .filter(todo -> todo.getId() == todoID)
+//                .findFirst()
+//                .map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.status(HttpStatus.OK).build());
+//    }
 }
